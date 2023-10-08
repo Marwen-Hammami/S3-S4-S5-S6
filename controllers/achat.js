@@ -2,35 +2,72 @@ import Achat from '../models/achat.js'
 import Game from '../models/game.js'
 import User from '../models/user.js'
 
-const games = [new Game(1, "dmc5", "fun game", 9.99, 13)
-, new Game(2, "re8", "best multiplayer", 12, 30)
-, new Game(3, "gta5", "Latest gta", 49.99, 32)]
-
-const users = [new User(1, "samsam", "12345678", 7)
-, new User(2, "rouge", "azerty", 13)
-, new User(3, "mango678", "0000", 60)]
-
-const achats = [new Achat(0, "12-06-2023", users[0], games[2])]
-
 export function getAll(req, res) {
-    res.status(200).json(achats);
+    Achat
+    .find({})
+    .then(docs => {
+        res.status(200).json(docs)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
+}
+
+export function addOnce(req, res) {
+    Achat
+    .create(req.body)
+    .then(newAchat => {
+        res.status(200).json(newAchat)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
 export function acheterJeu(req, res) {
-    const jeuAacheter = req.params.game
-    const acheteur = req.params.user
-
-    const game = games.find(val => val.title === jeuAacheter)
-    const user = users.find(val => val.username === acheteur)
-    if (game.quantity > 0 && user.wallet > game.price) {
-        game.quantity -= 1
-        user.wallet -= game.price
-        const achat = new Achat(achats.length, getCurrentDate(), user, game)
-        achats.push(achat)
-        res.status(200).json(achat);
-    }else {
-        res.status(500).json({message : "Jeu plus disponible ou fonds insuffisants"});
-    }
+    User
+    .findOne({ "username": req.params.user})
+    .then(user => {
+        Game
+        .findOne({ "title": req.params.game})
+        .then(game => {
+            if (game.quantity > 0 && user.wallet > game.price) {
+                //update game
+                Game
+                .findOneAndUpdate({ "title" : game.title}, { "quantity": game.quantity - 1 })
+                .then(doc => {
+                    //update user
+                    User
+                    .findOneAndUpdate({ "username" : user.username}, { "wallet": user.wallet - game.price})   //new pour retourner l'objet apres modification
+                    .then(doc2 => {
+                        //add achat
+                        const achat = new Achat({boughtDate: getCurrentDate(), user: user, game: game})
+                        achat.save()
+                        .then(newAchat => {
+                            res.status(200).json(newAchat)
+                        })
+                        .catch(err => {
+                            res.status(500).json({error: err})
+                        })
+                    })
+                    .catch(err => {
+                        res.status(500).json({error: err})
+                    })
+                })
+                .catch(err => {
+                    res.status(500).json({error: err})
+                })
+            }else {
+                res.status(500).json({message : "Jeu plus disponible ou fonds insuffisants"});
+            }
+        })
+        .catch(err => {
+            res.status(500).json({error: err})
+        })
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
 

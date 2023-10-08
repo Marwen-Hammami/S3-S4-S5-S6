@@ -1,40 +1,67 @@
 import Game from '../models/game.js'
 
-const games = [new Game(1, "dmc5", "fun game", 9.99, 13)
-, new Game(2, "re8", "best multiplayer", 12, 30)
-, new Game(3, "gta5", "Latest gta", 49.99, 32)]
-
 export function getAll(req, res) {
-    const resGames = games
-    for (let i = 0; i < resGames.length; i++) {
-        delete resGames[i].id
-    }
-    res.status(200).json(resGames);
+    Game
+    .find({}, '-_id')   //to exclude _id from results
+    .then(docs => {
+        res.status(200).json(docs)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
 export function addOnce(req, res) {
-    const game = new Game(games.length + 1, req.body.title, req.body.description, req.body.price, req.body.quantity)
-    games.push(game)
-    delete game.id
-    res.status(200).json({ message: "Created !", entity: game})
+    const game = new Game(req.body)
+    game.save()
+    .then(newGame => {
+        res.status(200).json(newGame)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
 export function getOnce(req, res) {
-    const game = games.find(val => val.title === req.params.title)
-    delete game.id
-    res.status(200).json(game);
+    Game
+    .findOne({ "title": req.params.title}, '-_id')
+    .then(doc => {
+        res.status(200).json(doc)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
-export function putOnce(req, res) {
-    res.status(200).json({ message: "Updated !", name: req.params.name})
+export function putAll(req, res) {
+    Game
+    .updateMany({}, { "price": 13.99})
+    .then(doc => {
+        res.status(200).json(doc)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
 export function patchOnce(req, res) {
-    const game = games.find(val => val.title === req.params.title)
-    game.quantity -= 1
-    res.status(200).json({ message: `Updated The Game ${game.title}, One copy got sold`, GameQuantity: game.quantity})
+    Game
+    .findOneAndUpdate({ "title" : req.params.title}, { "price": 9.99}, { new: true })   //new pour retourner l'objet apres modification
+    .then(doc => {
+        res.status(200).json(doc)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }
 
 export function deleteOnce(req, res) {
-    res.status(200).json({ message: "Deleted !", name: req.params.name})
+    Game
+    .findOneAndRemove({ "title" : req.params.title})
+    .then(doc => {
+        res.status(200).json(doc)
+    })
+    .catch(err => {
+        res.status(500).json({error: err})
+    })
 }

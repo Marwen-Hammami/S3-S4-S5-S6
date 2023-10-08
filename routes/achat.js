@@ -1,12 +1,13 @@
 import express from 'express'
 
-import {getAll, acheterJeu} from '../controllers/achat.js'
+import {getAll, addOnce, acheterJeu} from '../controllers/achat.js'
 
 const router = express.Router()
 
 router
 .route('/achats')
 .get(getAll)
+.post(addOnce)
 
 router
 .route('/achats/:game/:user')
