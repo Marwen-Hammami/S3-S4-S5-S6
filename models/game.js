@@ -19,6 +19,10 @@ const gameSchema = new Schema(
             type: Number,
             required: true
         },
+        image: {
+            type: String,
+            required: true
+        }
     },
     {
         timestamps: true // Ajouter automatiquement createdAt et updatedAt

@@ -15,6 +15,10 @@ const userSchema = new Schema(
             type: mongoose.Types.Decimal128,
             required: true
         },
+        avatar: {
+            type: String,
+            required: true
+        }
     },
     {
         timestamps: true // Ajouter automatiquement createdAt et updatedAt

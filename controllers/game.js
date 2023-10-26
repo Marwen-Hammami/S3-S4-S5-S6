@@ -1,4 +1,5 @@
 import Game from '../models/game.js'
+import { validationResult } from "express-validator"
 
 export function getAll(req, res) {
     Game
@@ -12,14 +13,25 @@ export function getAll(req, res) {
 }
 
 export function addOnce(req, res) {
-    const game = new Game(req.body)
-    game.save()
+    if (!validationResult(req).isEmpty()) {
+        res.status(400).json({ errors: validationResult(req).array() })
+    }else {
+    Game
+    .create({
+        title: req.body.title,
+        description: req.body.description,
+        price: req.body.price,
+        quantity: req.body.quantity,
+        image: `${req.protocol}://${req.get('host')}/img/${req.file.filename}`,
+        
+    })
     .then(newGame => {
         res.status(200).json(newGame)
     })
     .catch(err => {
         res.status(500).json({error: err})
     })
+    }
 }
 
 export function getOnce(req, res) {

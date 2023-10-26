@@ -31,7 +31,8 @@ export function acheterJeu(req, res) {
         Game
         .findOne({ "title": req.params.game})
         .then(game => {
-            if (game.quantity > 0 && user.wallet > game.price) {
+            var userHaveFunds = +user.wallet.toString() > +game.price.toString()
+            if (game.quantity > 0 && userHaveFunds) {
                 //update game
                 Game
                 .findOneAndUpdate({ "title" : game.title}, { "quantity": game.quantity - 1 })
@@ -41,7 +42,7 @@ export function acheterJeu(req, res) {
                     .findOneAndUpdate({ "username" : user.username}, { "wallet": user.wallet - game.price})   //new pour retourner l'objet apres modification
                     .then(doc2 => {
                         //add achat
-                        const achat = new Achat({boughtDate: getCurrentDate(), user: user, game: game})
+                        const achat = new Achat({boughtDate: Date(), user: user, game: game})
                         achat.save()
                         .then(newAchat => {
                             res.status(200).json(newAchat)
@@ -68,17 +69,4 @@ export function acheterJeu(req, res) {
     .catch(err => {
         res.status(500).json({error: err})
     })
-}
-
-
-function getCurrentDate() {
-    const currentDate = new Date();
-
-    const day = currentDate.getDate().toString().padStart(2, '0');
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
-    const year = currentDate.getFullYear();
-
-    const formattedDate = `${day}-${month}-${year}`;
-
-    return formattedDate
 }

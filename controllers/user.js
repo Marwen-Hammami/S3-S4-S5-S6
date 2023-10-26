@@ -1,4 +1,5 @@
 import User from '../models/user.js'
+import { validationResult } from "express-validator"
 
 export function getAll(req, res) {
     User
@@ -12,14 +13,24 @@ export function getAll(req, res) {
 }
 
 export function addOnce(req, res) {
-    const user = new User(req.body)
-    user.save()
+    console.log(req.file.size)  //faire la vérification de la taille ici
+    if (!validationResult(req).isEmpty()) {
+        res.status(400).json({ errors: validationResult(req).array() })
+    }else {
+    User
+    .create({
+        username: req.body.username,
+        password: req.body.password,
+        wallet: req.body.wallet,
+        avatar: `${req.protocol}://${req.get('host')}/img/${req.file.filename}`,
+    })
     .then(newUser => {
         res.status(200).json(newUser)
     })
     .catch(err => {
         res.status(500).json({error: err})
     })
+    }
 }
 
 export function getOnce(req, res) {
