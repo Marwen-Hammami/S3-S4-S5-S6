@@ -1,5 +1,7 @@
 FROM node:16
 
+LABEL maintainer="Abdel Monem Aissa <abdelmonem.aissa@esprit.tn>"
+
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 
 WORKDIR /home/node/app
